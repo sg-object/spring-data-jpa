@@ -5,11 +5,9 @@ import org.springframework.stereotype.Repository;
 import com.sg.jpa.code.model.Code;
 
 @Repository
-public interface CodeRepository extends JpaRepository<Code, Long> {
+public interface CodeRepository extends JpaRepository<Code, String> {
 
 	public Code findByCode(String code);
 
 	public void deleteByCode(String code);
-
-	public long countByGroupCode(String groupCode);
 }

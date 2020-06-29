@@ -3,16 +3,18 @@ package com.sg.jpa.code.model;
 import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
+import javax.persistence.Transient;
 import org.hibernate.annotations.DynamicUpdate;
+import com.sg.jpa.common.model.AbstractModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @DynamicUpdate
 @Data
+@EqualsAndHashCode(callSuper = false)
 @Entity(name = "GROUP_CODE")
-public class GroupCode {
+public class GroupCode extends AbstractModel {
 
 	@Id
 	private String groupCode;
@@ -20,7 +22,6 @@ public class GroupCode {
 	private String groupName;
 
 	@ApiModelProperty(hidden = true)
-	@OneToMany
-	@JoinColumn(name = "groupCode")
-	private List<Code> codes;
+	@Transient
+	private List<String> codes;
 }
