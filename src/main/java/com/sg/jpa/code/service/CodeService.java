@@ -6,9 +6,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.sg.jpa.code.model.Code;
-import com.sg.jpa.code.model.GroupCode;
+import com.sg.jpa.code.model.CodeRelation;
 import com.sg.jpa.code.repository.CodeRepository;
-import com.sg.jpa.code.repository.GroupCodeRepository;
 import com.sg.jpa.common.exception.DuplicateDataException;
 import com.sg.jpa.common.exception.NotFoundDataException;
 import com.sg.jpa.common.exception.VerificationException;
@@ -19,23 +18,24 @@ import com.sg.jpa.common.util.VerificationUtils;
 public class CodeService {
 
 	@Autowired
-	private GroupCodeRepository groupCodeRepository;
+	private CodeRepository codeRepository;
 
 	@Autowired
-	private CodeRepository codeRepository;
+	private CodeRelationService codeRelationService;
+
+	@Autowired
+	private GroupCodeService groupCodeService;
 
 	public List<Code> getCodeList(int page, int size) {
 		if (!VerificationUtils.checkPageValue(page, size)) {
 			throw new VerificationException();
 		}
-		return codeRepository.findAll(PageRequestUtils.getRequest(page, size, Sort.by("groupCode").descending()))
+		return codeRepository.findAll(PageRequestUtils.getRequest(page, size, Sort.by("code").descending()))
 				.getContent();
 	}
 
 	public Code getCode(String code) {
-		if (VerificationUtils.isNullOrBlank(code)) {
-			throw new VerificationException();
-		}
+		checkStringValue(code);
 		Code result = codeRepository.findByCode(code);
 		if (result == null) {
 			throw new NotFoundDataException();
@@ -43,37 +43,41 @@ public class CodeService {
 		return result;
 	}
 
+	public List<Code> getCodeList(List<String> codes) {
+		return codeRepository.findAllById(codes);
+	}
+
 	@Transactional
 	public void createCode(Code code) {
-		if (VerificationUtils.isNullOrBlank(code.getCode()) || VerificationUtils.isNullOrBlank(code.getGroupCode())) {
-			throw new VerificationException();
-		}
-		Code codeData = codeRepository.findByCode(code.getCode());
-		GroupCode groupData = groupCodeRepository.findByGroupCode(code.getGroupCode());
-		if (codeData != null) {
+		checkStringValue(code.getCode());
+		checkStringValue(code.getGroupCode());
+
+		Code data = codeRepository.findByCode(code.getCode());
+		if (data != null) {
 			throw new DuplicateDataException();
 		}
-		if (groupData == null) {
-			throw new NotFoundDataException();
-		}
+		groupCodeService.getGroupCode(code.getGroupCode());
 		codeRepository.save(code);
+
+		codeRelationService.createRelation(new CodeRelation(code.getGroupCode(), code.getCode()));
 	}
 
 	@Transactional
 	public void updateCode(Code code) {
-		if (VerificationUtils.isNullOrBlank(code.getCode())) {
-			throw new VerificationException();
-		}
 		Code data = getCode(code.getCode());
 		data.setCodeName(code.getCodeName());
 	}
 
 	@Transactional
 	public void deleteCode(String code) {
-		if (VerificationUtils.isNullOrBlank(code)) {
-			throw new VerificationException();
-		}
 		getCode(code);
 		codeRepository.deleteByCode(code);
+		codeRelationService.deleteRelationByCode(code);
+	}
+
+	private void checkStringValue(String value) {
+		if (VerificationUtils.isNullOrBlank(value)) {
+			throw new VerificationException();
+		}
 	}
 }

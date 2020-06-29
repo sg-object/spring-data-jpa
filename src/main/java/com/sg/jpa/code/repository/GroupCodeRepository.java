@@ -5,7 +5,7 @@ import org.springframework.stereotype.Repository;
 import com.sg.jpa.code.model.GroupCode;
 
 @Repository
-public interface GroupCodeRepository extends JpaRepository<GroupCode, Long> {
+public interface GroupCodeRepository extends JpaRepository<GroupCode, String> {
 
 	public GroupCode findByGroupCode(String groupCode);
 

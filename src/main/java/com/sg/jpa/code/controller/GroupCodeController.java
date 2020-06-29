@@ -10,11 +10,12 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.sg.jpa.code.model.Code;
 import com.sg.jpa.code.model.GroupCode;
 import com.sg.jpa.code.service.GroupCodeService;
 
 @RestController
-@RequestMapping("/group/codes")
+@RequestMapping("/groups")
 public class GroupCodeController {
 
 	@Autowired
@@ -28,6 +29,11 @@ public class GroupCodeController {
 	@GetMapping("/{groupCode}")
 	public GroupCode getGroupCode(@PathVariable String groupCode) {
 		return groupCodeService.getGroupCode(groupCode);
+	}
+
+	@GetMapping("/{groupCode}/codes")
+	public List<Code> getCodeListOfGroup(@PathVariable String groupCode) {
+		return groupCodeService.getCodeListOfGroup(groupCode);
 	}
 
 	@PostMapping
